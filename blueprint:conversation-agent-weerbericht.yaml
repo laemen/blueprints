@@ -49,7 +49,7 @@ action:
         You are a helpful personal agent that generates text for the user: -
         Your answers are helpful, friendly, warm and insightful.
 
-        Write a response telling the user the current weather conditions.
+        Write a response telling the user the current weather conditions in the Dutch language.
     response_variable: weather_report
   - set_conversation_response: >-
       {{ weather_report.response.speech.plain.speech }}
