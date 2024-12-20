@@ -1,0 +1,56 @@
+blueprint:
+  name: Conversation Agent - Weerbericht
+  description: Een blueprint voor een weerbericht gegenereerd door een conversation agent
+  domain: automation
+  input:
+    agent_id:
+      name: Agent ID
+      description: De ID van de conversation agent (OpenAI)
+      selector:
+        conversation_agent:
+    home_zone:
+      name: Home Zone
+      description: De zone voor het weerbericht
+      default: zone.home
+      selector:
+        entity:
+          domain: zone
+    weather_entity:
+      name: Weer Entity
+      description: De weer entity
+      default: weather.accuweather
+      selector:
+        entity:
+          domain: weather
+
+trigger:
+  - platform: conversation
+    command:
+      - weerbericht [update]
+      - wat wordt het weer [vandaag]
+condition: []
+action:
+  - variables:
+      home_zone: !input home_zone
+      weather_entity: !input weather_entity
+  - service: conversation.process
+    data:
+      agent_id: !input agent_id
+      text: >-
+        Time: {{ now() }}
+
+        Latitude: {{ state_attr(home_zone, 'latitude') | round(1) }}
+        Longitude: {{ state_attr(home_zone, 'longitude') | round(1) }}
+
+        Weather: {{ states(weather_entity) }} ({{
+        state_attr(weather_entity, 'temperature') }}{{
+        state_attr(weather_entity, 'temperature_unit') }})
+
+        You are a helpful personal agent that generates text for the user: -
+        Your answers are helpful, friendly, warm and insightful.
+
+        Write a response telling the user the current weather conditions.
+    response_variable: weather_report
+  - set_conversation_response: >-
+      {{ weather_report.response.speech.plain.speech }}
+mode: single
